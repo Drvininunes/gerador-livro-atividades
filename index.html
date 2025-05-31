@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Livro de Multiatividades para Idosos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 30px auto;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .results {
+            margin-top: 40px;
+        }
+
+        .chapter {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .chapter:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .chapter-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            font-weight: bold;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chapter-content {
+            padding: 25px;
+        }
+
+        .prompt-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .prompt-title {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .prompt-text {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .copy-btn.copied {
+            background: #17a2b8;
+        }
+
+        .chapter-icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .info-box h3 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Gerador de Livro de Multiatividades</h1>
+            <p>Sistema de Automação para Livros Temáticos para Idosos (60+)</p>
+        </div>
+
+        <div class="content">
+            <div class="info-box">
+                <h3>📖 Como funciona?</h3>
+                <p>Digite o tema desejado e o sistema gerará automaticamente todos os prompts necessários para criar seu livro completo de multiatividades. Cada prompt será otimizado para diferentes IAs especializadas.</p>
+            </div>
+
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="theme">🎨 Tema do Livro:</label>
+                    <input type="text" id="theme" placeholder="Ex: Natal, Páscoa, Festa Junina, Flores, Animais, etc." />
+                </div>
+
+                <div class="input-group">
+                    <label for="edition">📚 Edição/Volume:</label>
+                    <input type="text" id="edition" placeholder="Ex: Volume 1, Edição de Verão, etc." />
+                </div>
+
+                <div class="input-group">
+                    <label for="difficulty">⚡ Estilo de Linguagem:</label>
+                    <select id="difficulty">
+                        <option value="simples">Linguagem Simples e Clara</option>
+                        <option value="carinhosa">Linguagem Carinhosa e Acolhedora</option>
+                        <option value="motivacional">Linguagem Motivacional</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="observations">📝 Observações Especiais (opcional):</label>
+                    <textarea id="observations" rows="3" placeholder="Ex: Focar em memórias da infância, incluir elementos regionais, etc."></textarea>
+                </div>
+
+                <button class="generate-btn" onclick="generatePrompts()">
+                    ✨ Gerar Todos os Prompts
+                </button>
+            </div>
+
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Gerando prompts personalizados...</p>
+            </div>
+
+            <div id="results" class="results hidden">
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number">45</div>
+                        <div class="stat-label">Caça-Palavras</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">30</div>
+                        <div class="stat-label">Labirintos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">30</div>
+                        <div class="stat-label">Desenhos p/ Colorir</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">25</div>
+                        <div class="stat-label">Receitas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">25</div>
+                        <div class="stat-label">Brincadeiras</div>
+                    </div>
+                </div>
+
+                <!-- Capítulo 1: Caça-Palavras -->
+                <div class="chapter">
+                    <div class="chapter-header">
+                        <span><span class="chapter-icon">🔍</span>Capítulo 1: Caça-Palavras Temáticos</span>
+                    </div>
+                    <div class="chapter-content">
+                        <div class="prompt-box">
+                            <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+                            <div class="prompt-title">Prompt para IA Especializada em Caça-Palavras:</div>
+                            <div class="prompt-text" id="crossword-prompt"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Capítulo 2: Labirintos -->
+                <div class="chapter">
+                    <div class="chapter-header">
+                        <span><span class="chapter-icon">🌀</span>Capítulo 2: Labirintos</span>
+                    </div>
+                    <div class="chapter-content">
+                        <div class="prompt-box">
+                            <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+                            <div class="prompt-title">Prompt para IA Especializada em Labirintos:</div>
+                            <div class="prompt-text" id="maze-prompt"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Capítulo 3: Desenhos para Colorir -->
+                <div class="chapter">
+                    <div class="chapter-header">
+                        <span><span class="chapter-icon">🎨</span>Capítulo 3: Desenhos para Colorir</span>
+                    </div>
+                    <div class="chapter-content">
+                        <div class="prompt-box">
+                            <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+                            <div class="prompt-title">Prompt para IA de Geração de Imagens (Desenhos):</div>
+                            <div class="prompt-text" id="coloring-prompt"></div>
+                        </div>
+                        <div class="prompt-box">
+                            <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+                            <div class="prompt-title">Prompt para IA de Geração de Imagens (Versões Coloridas):</div>
+                            <div class="prompt-text" id="colored-prompt"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Capítulo 4: Receitas -->
+                <div class="chapter">
+                    <div class="chapter-header">
+                        <span><span class="chapter-icon">👩‍🍳</span>Capítulo 4: Receitas Nostálgicas</span>
+                    </div>
+                    <div class="chapter-content">
+                        <div class="prompt-box">
+                            <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+                            <div class="prompt-title">Prompt para IA de Conteúdo (Receitas):</div>
+                            <div class="prompt-text" id="recipes-prompt"></div>
+                        </div>
+                        <div class="prompt-box">
+                            <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+                            <div class="prompt-title">Prompt para IA de Geração de Imagens (Ilustrações das Receitas):</div>
+                            <div class="prompt-text" id="recipe-images-prompt"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Capítulo 5: Brincadeiras -->
+                <div class="chapter">
+                    <div class="chapter-header">
+                        <span><span class="chapter-icon">👨‍👩‍👧‍👦</span>Capítulo 5: Brincadeiras Intergeracionais</span>
+                    </div>
+                    <div class="chapter-content">
+                        <div class="prompt-box">
+                            <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+                            <div class="prompt-title">Prompt para IA de Conteúdo (Brincadeiras):</div>
+                            <div class="prompt-text" id="games-prompt"></div>
+                        </div>
+                        <div class="prompt-box">
+                            <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+                            <div class="prompt-title">Prompt para IA de Geração de Imagens (Ilustrações das Brincadeiras):</div>
+                            <div class="prompt-text" id="games-images-prompt"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Capítulo Extra: Formatação -->
+                <div class="chapter">
+                    <div class="chapter-header">
+                        <span><span class="chapter-icon">📄</span>Formatação e Diagramação</span>
+                    </div>
+                    <div class="chapter-content">
+                        <div class="prompt-box">
+                            <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+                            <div class="prompt-title">Instruções de Formatação para Designer/Diagramador:</div>
+                            <div class="prompt-text" id="formatting-prompt"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function generatePrompts() {
+            const theme = document.getElementById('theme').value.trim();
+            const edition = document.getElementById('edition').value.trim();
+            const difficulty = document.getElementById('difficulty').value;
+            const observations = document.getElementById('observations').value.trim();
+
+            if (!theme) {
+                alert('Por favor, digite o tema do livro.');
+                return;
+            }
+
+            // Mostrar loading
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('results').classList.add('hidden');
+
+            // Simular delay de processamento
+            setTimeout(() => {
+                generateAllPrompts(theme, edition, difficulty, observations);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('results').classList.remove('hidden');
+                
+                // Scroll para os resultados
+                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+            }, 2000);
+        }
+
+        function generateAllPrompts(theme, edition, difficulty, observations) {
+            const languageStyle = {
+                'simples': 'linguagem simples e clara',
+                'carinhosa': 'linguagem carinhosa e acolhedora',
+                'motivacional': 'linguagem motivacional e inspiradora'
+            };
+
+            const selectedStyle = languageStyle[difficulty];
+            const extraNotes = observations ? `\n\nObservações especiais: ${observations}` : '';
+
+            // Prompt para Caça-Palavras
+            document.getElementById('crossword-prompt').textContent = `Crie 45 caça-palavras temáticos sobre "${theme}" para um livro de atividades para pessoas com 60 anos ou mais${edition ? ` (${edition})` : ''}.
+
+ESPECIFICAÇÕES:
+- 15 caça-palavras FÁCEIS (grade 10x10, 8-12 palavras simples)
+- 15 caça-palavras INTERMEDIÁRIOS (grade 12x12, 12-15 palavras)
+- 15 caça-palavras DIFÍCEIS (grade 15x15, 15-20 palavras)
+
+REQUISITOS TÉCNICOS:
+- Fonte grande (mínimo 14pt) para pessoas com deficiência visual
+- Palavras relacionadas ao tema "${theme}"
+- Cada caça-palavras deve ter uma página com o puzzle e a página seguinte com a solução
+- Palavras podem estar na horizontal, vertical e diagonal
+- Incluir lista das palavras a serem encontradas abaixo de cada puzzle
+- Usar ${selectedStyle}
+
+FORMATO DE ENTREGA:
+Para cada caça-palavras, forneça:
+1. Título relacionado ao subtema
+2. Grade do puzzle
+3. Lista das palavras
+4. Grade com a solução destacada
+
+SUBTEMAS SUGERIDOS PARA "${theme}":
+[Gere 45 subtemas diferentes relacionados a "${theme}"]${extraNotes}`;
+
+            // Prompt para Labirintos
+            document.getElementById('maze-prompt').textContent = `Crie 30 labirintos temáticos sobre "${theme}" para um livro de atividades para pessoas com 60 anos ou mais${edition ? ` (${edition})` : ''}.
+
+ESPECIFICAÇÕES:
+- 10 labirintos FÁCEIS (caminhos largos, poucas bifurcações)
+- 10 labirintos INTERMEDIÁRIOS (complexidade média)
+- 10 labirintos DIFÍCEIS (caminhos estreitos, múltiplas bifurcações)
+
+REQUISITOS TÉCNICOS:
+- Caminhos largos o suficiente para fácil visualização
+- Tema visual relacionado a "${theme}" 
+- Cada labirinto em uma página, solução na página seguinte
+- Ponto de entrada e saída claramente marcados
+- Elementos decorativos temáticos nas bordas
+- Tamanho adequado para folha A4
+
+FORMATO DE ENTREGA:
+Para cada labirinto:
+1. Título temático
+2. Labirinto sem solução
+3. Mesmo labirinto com caminho da solução destacado
+
+TEMAS VISUAIS PARA OS LABIRINTOS DE "${theme}":
+[Gere 30 cenários diferentes relacionados a "${theme}"]${extraNotes}`;
+
+            // Prompt para Desenhos para Colorir
+            document.getElementById('coloring-prompt').textContent = `Crie 30 desenhos para colorir sobre "${theme}" para um livro de atividades para pessoas com 60 anos ou mais${edition ? ` (${edition})` : ''}.
+
+ESPECIFICAÇÕES:
+- 10 desenhos FÁCEIS (formas grandes, poucos detalhes, linhas grossas)
+- 10 desenhos INTERMEDIÁRIOS (detalhamento médio)
+- 10 desenhos DIFÍCEIS (muitos detalhes finos, padrões complexos)
+
+REQUISITOS TÉCNICOS:
+- Linhas pretas definidas e grossas (mínimo 2pt)
+- Estilo elegante e sofisticado
+- Adequado para pessoas com limitações motoras finas
+- Tema relacionado a "${theme}"
+- Tamanho A4, bem distribuído na página
+- Sem áreas muito pequenas para colorir
+
+ESTILO ARTÍSTICO:
+- Traços limpos e definidos
+- Composições harmoniosas
+- Detalhes proporcionais à dificuldade
+- Elementos que remetam a memórias afetivas
+
+TEMAS PARA OS DESENHOS DE "${theme}":
+[Gere 30 ideias específicas diferentes relacionadas a "${theme}"]
+
+PROMPT PARA IA DE IMAGEM:
+"Create a elegant black and white coloring page illustration of [tema específico] related to ${theme}, with clean bold lines (minimum 2pt), [level] difficulty, designed for seniors 60+, A4 format, sophisticated style, no text"
+
+Substitua [tema específico] e [level] para cada desenho (easy/medium/hard).${extraNotes}`;
+
+            // Prompt para Versões Coloridas
+            document.getElementById('colored-prompt').textContent = `Crie 30 versões coloridas dos desenhos para colorir sobre "${theme}" para servir como inspiração no livro de atividades.
+
+ESPECIFICAÇÕES:
+- Usar as mesmas ilustrações dos desenhos para colorir
+- Cores harmoniosas e inspiradoras
+- Paleta adequada para o tema "${theme}"
+- Estilo realista mas suave
+
+REQUISITOS TÉCNICOS:
+- Cores vivas mas não agressivas
+- Combinações que sirvam de inspiração
+- Qualidade de impressão adequada
+- Mesmo layout dos desenhos originais
+
+PROMPT PARA IA DE IMAGEM:
+"Create a beautifully colored version of [desenho específico] related to ${theme}, with harmonious colors, elegant style, inspiring color palette, high quality illustration, A4 format, designed as inspiration for seniors coloring book"
+
+Use cores temáticas apropriadas para "${theme}":
+[Sugira paletas de cores específicas para o tema]${extraNotes}`;
+
+            // Prompt para Receitas
+            document.getElementById('recipes-prompt').textContent = `Crie 25 receitas nostálgicas relacionadas ao tema "${theme}" para um livro de atividades para pessoas com 60 anos ou mais${edition ? ` (${edition})` : ''}.
+
+ESPECIFICAÇÕES:
+- Receitas que despertem memórias afetivas
+- Preparação simples e acessível
+- Ingredientes fáceis de encontrar
+- Foco em comidas saudáveis
+- Cada receita ocupa 1 página A4
+
+REQUISITOS:
+- Título atrativo da receita
+- Lista de ingredientes clara
+- Modo de preparo passo a passo
+- Tempo de preparo e rendimento
+- Dicas especiais ou variações
+- Uma memória afetiva ou curiosidade relacionada
+- Usar ${selectedStyle}
+
+FORMATO PARA CADA RECEITA:
+---
+TÍTULO: [Nome da receita]
+TEMA: [Relação com "${theme}"]
+
+INGREDIENTES:
+[Lista clara e organizada]
+
+MODO DE PREPARO:
+[Passos numerados e simples]
+
+TEMPO DE PREPARO: [tempo]
+RENDIMENTO: [porções]
+
+DICA ESPECIAL:
+[Dica prática ou variação]
+
+MEMÓRIA AFETIVA:
+[Pequeno texto sobre a origem ou tradição da receita]
+---
+
+TIPOS DE RECEITAS PARA "${theme}":
+[Gere 25 ideias de receitas relacionadas ao tema]${extraNotes}`;
+
+            // Prompt para Imagens das Receitas
+            document.getElementById('recipe-images-prompt').textContent = `Crie 25 ilustrações para acompanhar as receitas nostálgicas do tema "${theme}".
+
+ESPECIFICAÇÕES:
+- Uma ilustração por receita
+- Estilo acolhedor e apetitoso
+- Qualidade adequada para impressão
+- Foco no prato principal da receita
+
+PROMPT PARA IA DE IMAGEM:
+"Create a warm, appetizing illustration of [nome da receita] related to ${theme}, homestyle cooking, nostalgic atmosphere, well-plated food photography style, cozy kitchen setting, high quality, A4 format illustration"
+
+ESTILO VISUAL:
+- Cores quentes e acolhedoras
+- Apresentação caseira mas elegante
+- Elementos que remetam ao tema "${theme}"
+- Foco no aspecto apetitoso do prato
+
+COMPOSIÇÃO:
+- Prato principal em destaque
+- Elementos decorativos sutis do tema
+- Boa iluminação e contraste
+- Adequado para impressão em A4${extraNotes}`;
+
+            // Prompt para Brincadeiras
+            document.getElementById('games-prompt').textContent = `Crie 25 sugestões de brincadeiras intergeracionais relacionadas ao tema "${theme}" para pessoas com 60+ brincarem com crianças.
+
+FAIXAS ETÁRIAS:
+- 8-9 brincadeiras para crianças de 3 a 5 anos
+- 8-9 brincadeiras para crianças de 6 a 8 anos
+- 8-9 brincadeiras para crianças de 9 a 12 anos
+
+ESPECIFICAÇÕES:
+- Cada brincadeira ocupa 1 página A4
+- Adaptadas para pessoas com 60+ anos
+- Promovem interação entre gerações
+- Relacionadas ao tema "${theme}"
+- Instruções claras e simples
+- Usar ${selectedStyle}
+
+FORMATO PARA CADA BRINCADEIRA:
+---
+TÍTULO: [Nome da brincadeira]
+FAIXA ETÁRIA: [idade das crianças]
+TEMA: [Relação com "${theme}"]
+
+PARTICIPANTES: [número de pessoas]
+MATERIAL NECESSÁRIO: [lista de materiais]
+ESPAÇO: [onde pode ser realizada]
+
+COMO BRINCAR:
+[Instruções passo a passo, numeradas]
+
+VARIAÇÕES:
+[Adaptações possíveis]
+
+BENEFÍCIOS:
+[O que desenvolve nas crianças e idosos]
+
+DICA ESPECIAL:
+[Como o idoso pode participar melhor]
+---
+
+TIPOS DE BRINCADEIRAS PARA "${theme}":
+[Gere 25 ideias de brincadeiras adaptadas ao tema]${extraNotes}`;
+
+            // Prompt para Imagens das Brincadeiras
+            document.getElementById('games-images-prompt').textContent = `Crie 25 ilustrações instrutivas para as brincadeiras intergeracionais do tema "${theme}".
+
+ESPECIFICAÇÕES:
+- Ilustrações que mostrem como executar a brincadeira
+- Representação de idosos e crianças brincando juntos
+- Estilo didático e acolhedor
+- Diversidade de idades e etnias
+
+PROMPT PARA IA DE IMAGEM:
+"Create an instructional illustration showing [nome da brincadeira] related to ${theme}, featuring seniors (60+) playing with children [faixa etária], diverse ethnicities, warm family atmosphere, step-by-step visual guide, friendly cartoon style, A4 format"
+
+ELEMENTOS VISUAIS:
+- Expressões felizes e engajadas
+- Movimentos claros da brincadeira
+- Materiais necessários visíveis
+- Ambiente adequado (casa, parque, etc.)
+- Cores alegres mas suaves
+
+COMPOSIÇÃO:
+- Foco na interação intergeracional
+- Sequência visual quando necessário
+- Elementos temáticos de "${theme}"
+- Facilidade de compreensão visual${extraNotes}`;
+
+            // Prompt para Formatação
+            document.getElementById('formatting-prompt').textContent = `INSTRUÇÕES DE FORMATAÇÃO E DIAGRAMAÇÃO
+Livro de Multiatividades: "${theme}"${edition ? ` - ${edition}` : ''}
+
+ESPECIFICAÇÕES GERAIS:
+- Formato: A4 (210x297mm)
+- Fonte mínima: 14pt para textos, 16pt para títulos
+- Fontes recomendadas: Arial, Calibri, ou similar (alta legibilidade)
+- Margens: 2cm em todos os lados
+- Espaçamento entre linhas: 1.5
+
+ESTRUTURA DO LIVRO:
+Capa + Contracapa
+Página de Créditos
+Índice
+Capítulo 1: Caça-palavras (45 atividades + 45 soluções = 90 páginas)
+Capítulo 2: Labirintos (30 atividades + 30 soluções = 60 páginas)
+Capítulo 3: Desenhos para colorir (30 desenhos + 30 coloridos = 60 páginas)
+Capítulo 4: Receitas (25 receitas com ilustrações = 25 páginas)
+Capítulo 5: Brincadeiras (25 brincadeiras com ilustrações = 25 páginas)
+
+LAYOUT ESPECÍFICO:
+- Caça-palavras: atividade página ímpar, solução página par
+- Labirintos: atividade página ímpar, solução página par
+- Desenhos para colorir: desenho página ímpar, versão colorida página par
+- Receitas: uma receita completa por página com ilustração
+- Brincadeiras: uma brincadeira completa por página com ilustração
+
+ACESSIBILIDADE VISUAL:
+- Contraste mínimo 4.5:1 entre texto e fundo
+- Evitar fundos com padrões que dificultem a leitura
+- Espaçamento generoso entre elementos
+- Ícones grandes e claros para identificação de seções
+
+ELEMENTOS GRÁFICOS:
+- Paleta de cores suave relacionada ao tema "${theme}"
+- Bordas decorativas discretas
+- Numeração das páginas em fonte grande
+- Cabeçalhos de seção bem destacados
+
+QUALIDADE DE IMPRESSÃO:
+- Resolução mínima: 300 DPI para imagens
+- Formato de cores: CMYK
+- Papel sugerido: 75g/m² ou superior
+- Acabamento: lombada quadrada ou espiral
+
+CHECKLIST FINAL:
+□ Todas as fontes estão em tamanho adequado (14pt+)
+□ Contrastes adequados para baixa visão
+□ Sequência página ímpar/par respeitada
+□ Numeração clara e visível
+□ Margens uniformes
+□ Qualidade de imagem adequada
+□ Tema visual consistente em todo o livro${extraNotes}`;
+        }
+
+        function copyPrompt(button) {
+            const promptBox = button.parentElement;
+            const promptText = promptBox.querySelector('.prompt-text');
+            
+            // Criar elemento temporário para copiar
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = promptText.textContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+            
+            // Feedback visual
+            const originalText = button.textContent;
+            button.textContent = 'Copiado!';
+            button.classList.add('copied');
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('copied');
+            }, 2000);
+        }
+
+        // Adicionar alguns temas de exemplo
+        window.addEventListener('load', function() {
+            const examples = [
+                'Natal e Festividades de Fim de Ano',
+                'Flores e Jardins',
+                'Festa Junina e Tradições Caipiras',
+                'Páscoa e Renovação',
+                'Animais de Estimação',
+                'Culinária Regional Brasileira',
+                'Músicas e Danças Tradicionais',
+                'Profissões Antigas',
+                'Transporte e Veículos Clássicos',
+                'Estações do Ano'
+            ];
+
+            const themeInput = document.getElementById('theme');
+            themeInput.addEventListener('focus', function() {
+                if (!this.value) {
+                    const randomExample = examples[Math.floor(Math.random() * examples.length)];
+                    this.placeholder = `Ex: ${randomExample}`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
